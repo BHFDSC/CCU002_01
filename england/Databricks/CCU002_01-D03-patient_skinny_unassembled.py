@@ -3,7 +3,7 @@
 # MAGIC 
 # MAGIC **Description** Gather together the records for each patient in primary and secondary care before they are assembled into a skinny record for CCU002_01. The output of this is a global temp View which is then used by **CCU002_01-D02-patient_skinny_record**
 # MAGIC  
-# MAGIC **Author(s)** Updated by Rochelle Knight for CCU002_01 from notebook by Sam Hollings and Jenny Cooper 
+# MAGIC **Author(s)** 
 # MAGIC 
 # MAGIC **Reviewer(s)** 
 # MAGIC 
