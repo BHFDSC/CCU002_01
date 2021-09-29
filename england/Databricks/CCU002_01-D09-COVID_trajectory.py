@@ -7,10 +7,7 @@
 # MAGIC This notebook:
 # MAGIC * Identifies all patients with COVID-19 related diagnosis
 # MAGIC * Creates a *trajectory* table with all data points for all affected individuals
-# MAGIC * Creates a *severity* table where all individuals are assigned a mutually-exclusive COVID-19 severity phenotype (mild, moderate, severe, death) based on the worst event they experience  
 # MAGIC   
-# MAGIC NB:
-# MAGIC * start and stop dates for the phenotyping is defined in notebook `CCU002_01-D08-COVID_infections_temp_tables`
 # MAGIC 
 # MAGIC **Project(s)** CCU002_01
 # MAGIC  
