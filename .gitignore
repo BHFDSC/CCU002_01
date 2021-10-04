@@ -1,2 +1,9 @@
 
 .DS_Store
+outside/data/*
+outside/raw/*
+outside/output/*
+!outside/data/README
+!outside/raw/README
+!outside/output/README
+.Rhistory
