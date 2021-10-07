@@ -8,44 +8,6 @@ df <- data.table::fread("data/ccu002_01_main_figure_estimates.csv",
 
 df <- df[df$agegp=="all" | df$stratification=="Age group",]
 
-tmp_arterial <- data.frame(event = "Arterial_event",
-                           agegp = "all",
-                           term = rep(c("week1_4","week5_49"), each = 6),
-                           estimate = NA,
-                           conf.low = NA,
-                           conf.high = NA,
-                           stratum = rep(c("Ethnicity: White",
-                                           "Ethnicity: Black",
-                                           "Ethnicity: Asian",
-                                           "Ethnicity: Other",
-                                           "Ethnicity: Mixed",
-                                           "No history of event"),
-                                         times = 2),
-                           stratification = rep(c(rep("Ethnicity",5),"Prior history of event"),
-                                                times=2),
-                           source = "synthetic")
-
-df <- rbind(df, tmp_arterial)
-
-tmp_venous <- data.frame(event = "Venous_event",
-                           agegp = "all",
-                           term = rep(c("week1_4","week5_49"), each = 6),
-                           estimate = NA,
-                           conf.low = NA,
-                           conf.high = NA,
-                           stratum = rep(c("Ethnicity: White",
-                                           "Ethnicity: Black",
-                                           "Ethnicity: Asian",
-                                           "Ethnicity: Other",
-                                           "Ethnicity: Mixed",
-                                           "No history of event"),
-                                         times = 2),
-                           stratification = rep(c(rep("Ethnicity",5),"Prior history of event"),
-                                                times=2),
-                         source = "synthetic")
-
-df <- rbind(df, tmp_venous)
-
 # Specify time -----------------------------------------------------------------
 
 term_to_time <- data.frame(term = c("week1","week2","week3_4","week5_8","week9_12","week13_26","week27_49",
@@ -54,6 +16,13 @@ term_to_time <- data.frame(term = c("week1","week2","week3_4","week5_8","week9_1
                                     2,26.5))
 
 df <- merge(df, term_to_time, by = c("term"), all.x = TRUE)
+
+# Give ethnicity estimates extra space -----------------------------------------
+
+df$time <- ifelse(df$stratum=="Ethnicity: Asian or Asian British", df$time-0.5, df$time)
+df$time <- ifelse(df$stratum=="Ethnicity: Other Ethnic Groups", df$time-1.0, df$time)
+df$time <- ifelse(df$stratum=="Ethnicity: Mixed", df$time+0.5, df$time)
+df$time <- ifelse(df$stratum=="Ethnicity: Black or Black British", df$time+1.0, df$time)
 
 # Specify line colours ---------------------------------------------------------
 
@@ -66,20 +35,20 @@ df$colour <- ifelse(df$stratum=="Age group: 60-79","#74c476",df$colour)
 df$colour <- ifelse(df$stratum=="Age group: >=80","#bae4b3",df$colour)
 df$colour <- ifelse(df$stratum=="Sex: Male","#cab2d6",df$colour)
 df$colour <- ifelse(df$stratum=="Sex: Female","#6a3d9a",df$colour)
-df$colour <- ifelse(df$stratum=="Ethnicity: White","#9ecae1",df$colour)
-df$colour <- ifelse(df$stratum=="Ethnicity: Black","#6baed6",df$colour)
-df$colour <- ifelse(df$stratum=="Ethnicity: Asian","#4292c6",df$colour)
-df$colour <- ifelse(df$stratum=="Ethnicity: Other","#2171b5",df$colour)
-df$colour <- ifelse(df$stratum=="Ethnicity: Mixed","#08519c",df$colour)
+df$colour <- ifelse(df$stratum=="Ethnicity: White","#08519c",df$colour)
+df$colour <- ifelse(df$stratum=="Ethnicity: Black or Black British","#2171b5",df$colour)
+df$colour <- ifelse(df$stratum=="Ethnicity: Asian or Asian British","#4292c6",df$colour)
+df$colour <- ifelse(df$stratum=="Ethnicity: Other Ethnic Groups","#6baed6",df$colour)
+df$colour <- ifelse(df$stratum=="Ethnicity: Mixed","#9ecae1",df$colour)
 df$colour <- ifelse(df$stratum=="Non-hospitalised COVID-19","#fb9a99",df$colour)
 df$colour <- ifelse(df$stratum=="Hospitalised COVID-19","#e31a1c",df$colour)
-df$colour <- ifelse(df$stratum=="History of event","#ff7f00",df$colour)
-df$colour <- ifelse(df$stratum=="No history of event","#fdbf6f",df$colour)
+df$colour <- ifelse(df$stratum=="Prior history of event","#ff7f00",df$colour)
+df$colour <- ifelse(df$stratum=="No prior history of event","#fdbf6f",df$colour)
 
 # Factor variables for ordering ------------------------------------------------
 
 df$stratification <- factor(df$stratification, levels=c("Overall",
-                                                        "Hospitalised/Non-hospitalised",
+                                                        "Hospitalised/Non-hospitalised COVID-19",
                                                         "Prior history of event",
                                                         "Age group",
                                                         "Sex",
@@ -89,8 +58,8 @@ df$stratum <- factor(df$stratum, levels=c("Extensive adjustment",
                                           "Age/sex/region adjustment",
                                           "Hospitalised COVID-19",
                                           "Non-hospitalised COVID-19",
-                                          "History of event",
-                                          "No history of event",
+                                          "Prior history of event",
+                                          "No prior history of event",
                                           "Age group: <40",
                                           "Age group: 40-59",
                                           "Age group: 60-79",
@@ -98,9 +67,9 @@ df$stratum <- factor(df$stratum, levels=c("Extensive adjustment",
                                           "Sex: Female",
                                           "Sex: Male",
                                           "Ethnicity: White",
-                                          "Ethnicity: Black",
-                                          "Ethnicity: Asian",
-                                          "Ethnicity: Other",
+                                          "Ethnicity: Black or Black British",
+                                          "Ethnicity: Asian or Asian British",
+                                          "Ethnicity: Other Ethnic Groups",
                                           "Ethnicity: Mixed")) 
 
 df$colour <- factor(df$colour, levels=c("#000000",
@@ -115,11 +84,11 @@ df$colour <- factor(df$colour, levels=c("#000000",
                                         "#bae4b3",
                                         "#6a3d9a",
                                         "#cab2d6",
-                                        "#9ecae1",
-                                        "#6baed6",
-                                        "#4292c6",
+                                        "#08519c",
                                         "#2171b5",
-                                        "#08519c")) 
+                                        "#4292c6",
+                                        "#6baed6",
+                                        "#9ecae1")) 
 
 # Plot and save ----------------------------------------------------------------
 
@@ -127,13 +96,13 @@ for (event in c("Arterial_event","Venous_event")) {
   
   ggplot2::ggplot(data = df[df$event==event,], 
                   mapping = ggplot2::aes(x = time, y = estimate, color = stratum, shape = stratum, fill = stratum)) +
+    ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = 1), colour = "#A9A9A9") +
     ggplot2::geom_point(position = ggplot2::position_dodge(width = 1)) +
     ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = ifelse(conf.low<0.5,0.5,conf.low), 
                                                   ymax = ifelse(conf.high>32,32,conf.high),  
                                                   width = 0), 
                            position = ggplot2::position_dodge(width = 1)) +
     ggplot2::geom_line(position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = 1), colour = "#A9A9A9") +
     ggplot2::scale_y_continuous(lim = c(0.5,32), breaks = c(0.5,1,2,4,8,16,32,32), trans = "log") +
     ggplot2::scale_x_continuous(lim = c(0,44), breaks = seq(0,44,4)) +
     ggplot2::scale_fill_manual(values = levels(df$colour), labels = levels(df$stratum)) +
@@ -146,9 +115,10 @@ for (event in c("Arterial_event","Venous_event")) {
                    panel.grid.minor = ggplot2::element_blank(),
                    legend.key = ggplot2::element_rect(colour = NA, fill = NA),
                    legend.title = ggplot2::element_blank(),
-                   legend.position="bottom") +
+                   legend.position="bottom",
+                   plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
     ggplot2::facet_wrap(stratification~.)
   
-  ggplot2::ggsave(paste0("output/",event,"s.pdf"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
+  ggplot2::ggsave(paste0("output/",event,"s.png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
   
 }

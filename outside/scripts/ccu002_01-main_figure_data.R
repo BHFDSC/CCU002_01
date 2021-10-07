@@ -9,7 +9,13 @@ files <- c("AgeSexRegion_Arterial_AllAge_AllSex.csv", # Overall: age/sex/region 
            "Extensive_Arterial_AllAge_Sex2.csv", # Sex: Female 
            "Extensive_Arterial_NonHospitalised_AllAge_AllSex.csv", # Non-hospitalised COVID-19
            "Extensive_Arterial_Hospitalised_AllAge_AllSex_For_Meta_Analysis_Only.csv", # Hospitalised COVID-19
-           "Extensive_ArterialVenous_AH1_AllAge_AllSex.csv", # History of event 
+           "Extensive_ArterialVenous_AH1_AllAge_AllSex.csv", # Prior history of event
+           "Extensive_ArterialVenous_AH0_AllAge_AllSex.csv", # No prior history of event
+           "Extensive_Ethnic_Black_Allage_AllSex.csv", # Ethnicity: Black or Black British
+           "Extensive_Ethnic_Mixed_AllAge_AllSex.csv", # Ethnicity: Mixed
+           "Extensive_Ethnic_Others_AllAge_AllSex.csv", # Ethnicity: Other Ethnic Groups
+           "Extensive_Ethnic_White_Allage_AllSex.csv", # Ethnicity: White
+           "Extensive_Ethnic_Asian_Allage_AllSex.csv", # Ethnicity: Asian or Asian British
            "AgeSexRegion_Venous_AllAge_AllSex.csv",
            "Extensive_Venous_AllAge_AllSex.csv",
            "Extensive_Venous_AllAge_AllSex.csv", 
@@ -17,7 +23,8 @@ files <- c("AgeSexRegion_Arterial_AllAge_AllSex.csv", # Overall: age/sex/region 
            "Extensive_Venous_AllAge_Sex2.csv",
            "Extensive_Venous_NonHospitalised_AllAge_AllSex.csv",
            "Extensive_Venous_Hospitalised_AllAge_AllSex_For_Meta_Analysis_Only.csv",
-           "Extensive_ArterialVenous_VH1_AllAge_AllSex.csv")
+           "Extensive_ArterialVenous_VH1_AllAge_AllSex.csv",
+           "Extensive_ArterialVenous_VH0_AllAge_AllSex.csv")
 
 # Specify stratum corresponding to files ---------------------------------------
 
@@ -28,7 +35,13 @@ stratum <- c("Age/sex/region adjustment",
              "Sex: Female",
              "Non-hospitalised COVID-19",
              "Hospitalised COVID-19",
-             "History of event",
+             "Prior history of event",
+             "No prior history of event",
+             "Ethnicity: Black or Black British",
+             "Ethnicity: Mixed",
+             "Ethnicity: Other Ethnic Groups",
+             "Ethnicity: White",
+             "Ethnicity: Asian or Asian British",
              "Age/sex/region adjustment",
              "Extensive adjustment",
              "Age group:",
@@ -36,7 +49,8 @@ stratum <- c("Age/sex/region adjustment",
              "Sex: Female",
              "Non-hospitalised COVID-19",
              "Hospitalised COVID-19",
-             "History of event")
+             "Prior history of event",
+             "No prior history of event")
 
 # Make a single dataframe containing all estimates -----------------------------
 
@@ -70,9 +84,9 @@ df$stratification <- ifelse(df$stratum %in% c("Age/sex/region adjustment","Exten
                             "Overall",df$stratification)
 
 df$stratification <- ifelse(df$stratum %in% c("Non-hospitalised COVID-19","Hospitalised COVID-19"),
-                            "Hospitalised/Non-hospitalised",df$stratification)
+                            "Hospitalised/Non-hospitalised COVID-19",df$stratification)
 
-df$stratification <- ifelse(df$stratum %in% c("History of event","No history of event"),
+df$stratification <- ifelse(df$stratum %in% c("Prior history of event","No prior history of event"),
                             "Prior history of event",df$stratification)
 
 df <- df[!(df$event=="Arterial_event" & df$source=="Extensive_ArterialVenous_VH0_AllAge_AllSex.csv"),]
@@ -85,7 +99,13 @@ df <- df[!(df$event=="Venous_event" & df$source=="Extensive_ArterialVenous_AH1_A
 events <- unique(df$event)
 stratum <- unique(df$stratum)[!grepl("Age group:",unique(df$stratum))]
 stratum <- stratum[stratum!="Hospitalised COVID-19"]
-stratum <- stratum[stratum!="History of event"]
+stratum <- stratum[stratum!="Prior history of event"]
+stratum <- stratum[stratum!="No prior history of event"]
+stratum <- stratum[stratum!="Ethnicity: Black or Black British"]
+stratum <- stratum[stratum!="Ethnicity: Mixed"]
+stratum <- stratum[stratum!="Ethnicity: Other Ethnic Groups"]
+stratum <- stratum[stratum!="Ethnicity: White"]
+stratum <- stratum[stratum!="Ethnicity: Asian or Asian British"]
 
 # Perform meta-analysis for each event/stratum combination ---------------------
 

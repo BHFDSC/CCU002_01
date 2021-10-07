@@ -3,9 +3,10 @@
 outside/data/*
 outside/raw/*
 outside/output/*
+outside/documents/*
+.Rhistory
+outside/scripts/ccu002_01_sept_2021_main_graphs_file_input_desc.do
+outside/scripts/ccu002_01_sept_2021_main_graphs.do
 !outside/data/README
 !outside/raw/README
 !outside/output/README
-.Rhistory
-scripts/ccu002_01_sept_2021_main_graphs_file_input_desc.do
-scripts/ccu002_01_sept_2021_main_graphs.do
