@@ -108,7 +108,7 @@ for (event in c("Arterial_event","Venous_event")) {
     ggplot2::scale_fill_manual(values = levels(df$colour), labels = levels(df$stratum)) +
     ggplot2::scale_color_manual(values = levels(df$colour), labels = levels(df$stratum)) +
     ggplot2::scale_shape_manual(values = c(rep(c(21,22),4),23,24,rep(c(21,22),2),23,24,25), labels = levels(df$stratum)) +
-    ggplot2::labs(x = "\nWeeks since COVID-19 infection", y = "Hazard ratio and 95% confidence interval") +
+    ggplot2::labs(x = "\nWeeks since COVID-19 diagnosis", y = "Hazard ratio and 95% confidence interval") +
     ggplot2::guides(fill=ggplot2::guide_legend(ncol=6,byrow=TRUE)) +
     ggplot2::theme_minimal() +
     ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(),
@@ -119,6 +119,6 @@ for (event in c("Arterial_event","Venous_event")) {
                    plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
     ggplot2::facet_wrap(stratification~.)
   
-  ggplot2::ggsave(paste0("output/",event,"s.png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
+  ggplot2::ggsave(paste0("output/main_figure_",tolower(gsub("_event","",event)),".png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
   
 }

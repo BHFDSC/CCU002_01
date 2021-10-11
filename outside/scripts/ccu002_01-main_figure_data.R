@@ -124,16 +124,17 @@ for (e in events) {
     meta$robust.se <- NA
     meta$statistic <- NA
     meta$stratum <- s
+    meta$adjustment <- tmp$adjustment[1]
     meta$stratification <- tmp$stratification[1]
     meta$source <- "meta-analysis"
     
       for (j in unique(meta$term)) {
         tmp2 <- tmp[tmp$term==j,]
         if (nrow(tmp2)>0) {
-          tmp_meta <- meta::metagen(tmp2$estimate,tmp2$std.error)
-          meta[meta$term==j,]$estimate <- tmp_meta$TE.fixed
-          meta[meta$term==j,]$conf.low <- tmp_meta$lower.fixed
-          meta[meta$term==j,]$conf.high <- tmp_meta$upper.fixed
+          tmp_meta <- meta::metagen(log(tmp2$estimate),tmp2$std.error, sm = "HR")
+          meta[meta$term==j,]$estimate <- exp(tmp_meta$TE.fixed)
+          meta[meta$term==j,]$conf.low <- exp(tmp_meta$lower.fixed)
+          meta[meta$term==j,]$conf.high <- exp(tmp_meta$upper.fixed)
           meta[meta$term==j,]$p.value <- tmp_meta$pval.fixed
           meta[meta$term==j,]$std.error <- tmp_meta$seTE.fixed
         }
