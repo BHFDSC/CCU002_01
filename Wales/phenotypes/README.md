@@ -5,3 +5,5 @@ The Welsh environment does not use SNOMED but Read codes so in order to harmonis
 and Welsh environments Read codes had to be used in place of SNOMED in this instance. 
 
 CCU002_01_phenotypes_READcodes.csv contains outcomes and covariates phentypes
+
+PHEN_READ_COVID19_CCU002-01.csv contains phenotypes for our main exposure which is COVID infection
