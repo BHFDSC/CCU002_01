@@ -83,19 +83,26 @@ df$agegp <- ifelse(df$agegp=="all_ages","all",df$agegp)
 files <- c("AgeSexRegion_AllAges_Wales_211014.xlsx",
            "Extensive_AllAges_Wales_211014.xlsx",
            "Extensive_AllAges_Wales_211014.xlsx",
-           "Extensive_AllAges_Wales_211014.xlsx")
+           "Extensive_AllAges_Wales_211014.xlsx",
+           "Extensive_Arterial_AgeGroups_Wales_211015.xlsx",
+           "Extensive_Venous_AgeGroups_Wales_211015.xlsx")
 
 stratum <- c("Age/sex/region adjustment",
              "Extensive adjustment",
              "Sex: Male",
-             "Sex: Female")
+             "Sex: Female",
+             "Age group:",
+             "Age group:")
 
 for (i in 1:length(files)) {
   
   tmp <- readxl::read_excel(paste0("raw/estimates/",files[i]))
   
-  tmp$agegp <- tmp$`age group`
-  tmp$`age group` <- NULL
+  if ("age group" %in% colnames(tmp)) {
+    tmp$agegp <- tmp$`age group`
+    tmp$`age group` <- NULL
+  }
+  
   tmp$`...1` <- NULL
   
   tmp <- tmp[grepl("week",tmp$term),]
@@ -137,6 +144,8 @@ df <- df[!(df$event=="Arterial_event" & df$source=="Extensive_ArterialVenous_VH0
 df <- df[!(df$event=="Arterial_event" & df$source=="Extensive_ArterialVenous_VH1_AllAge_AllSex.csv"),]
 df <- df[!(df$event=="Venous_event" & df$source=="Extensive_ArterialVenous_AH0_AllAge_AllSex.csv"),]
 df <- df[!(df$event=="Venous_event" & df$source=="Extensive_ArterialVenous_AH1_AllAge_AllSex.csv"),]
+df <- df[!(df$stratum=="Sex: Male" & df$sex==2),]
+df <- df[!(df$stratum=="Sex: Female" & df$sex==1),]
 
 # Identify results that need to be combined by age group -----------------------
 
@@ -188,7 +197,8 @@ df$covidpheno <- NULL
 
 # Identify results that need to be combined by nation --------------------------
 
-needs_meta <- unique(df[df$nation=="Wales",c("event","agegp","sex","stratum")])
+needs_meta <- unique(df[df$nation=="Wales",c("event","agegp","sex","stratum","term")])
+needs_meta <- needs_meta[needs_meta$term %in% c("week1","week2","week3_4","week5_8","week9_12","week13_26","week27_49"),]
 
 # Perform meta-analysis --------------------------------------------------------
 
@@ -197,30 +207,22 @@ for (i in 1:nrow(needs_meta)) {
   tmp <- df[df$event==needs_meta$event[i] &
               df$agegp==needs_meta$agegp[i] &
               df$sex==needs_meta$sex[i] &
-              df$stratum==needs_meta$stratum[i],]
+              df$stratum==needs_meta$stratum[i] &
+              df$term==needs_meta$term[i],]
   
   meta <- unique(tmp[,c("event","agegp","sex","stratum","term","adjustment","stratification")])
   
-  meta$nation <- "all"
-  meta$source <- "meta-analysis (nations)"
-  
-  meta$estimate <- NA
-  meta$conf.low <- NA
-  meta$conf.high <- NA
-  meta$p.value <- NA
-  meta$std.error <- NA
   meta$robust.se <- NA
   meta$statistic <- NA
-  
-  for (j in unique(meta$term)) {
-    tmp2 <- tmp[tmp$term==j,]
-    tmp_meta <- meta::metagen(log(tmp2$estimate),tmp2$std.error, sm = "HR")
-    meta[meta$term==j,]$estimate <- exp(tmp_meta$TE.fixed)
-    meta[meta$term==j,]$conf.low <- exp(tmp_meta$lower.fixed)
-    meta[meta$term==j,]$conf.high <- exp(tmp_meta$upper.fixed)
-    meta[meta$term==j,]$p.value <- tmp_meta$pval.fixed
-    meta[meta$term==j,]$std.error <- tmp_meta$seTE.fixed
-  }
+  meta$nation <- "all"
+  meta$source <- "meta-analysis (nations)"
+
+  tmp_meta <- meta::metagen(log(tmp$estimate),tmp$std.error, sm = "HR")
+  meta$estimate <- exp(tmp_meta$TE.fixed)
+  meta$conf.low <- exp(tmp_meta$lower.fixed)
+  meta$conf.high <- exp(tmp_meta$upper.fixed)
+  meta$p.value <- tmp_meta$pval.fixed
+  meta$std.error <- tmp_meta$seTE.fixed
   
   df <- plyr::rbind.fill(df, meta)
   
@@ -229,4 +231,4 @@ for (i in 1:nrow(needs_meta)) {
 
 # Save final estimates ---------------------------------------------------------
 
-data.table::fwrite(df,"data/ccu002_01_main_data_figures_1_2.csv")
+data.table::fwrite(df,"data/ccu002_01_main_data_figures_2_3.csv")

@@ -1,12 +1,19 @@
 rm(list = ls())
 
 files <- c("AgeSexRegion_HF_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex.csv", 
-           "Extensive_HF_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex.csv")
-           #"Extensive_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex_Pheno.csv") 
+           "Extensive_HF_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex.csv",
+           "Extensive_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex_Pheno.csv",
+           "AgeSexRegion_AllOutcomes_AllAge_AllSex.csv",
+           "Extensive_AMI_stroke_isch_PE_DVT_event_AllAge_AllSex.csv",
+           "Extensive_AMI_stroke_isch_PE_DVT_AllAge_AllSex_Phenotype.csv")
 
 stratum <- c("Age/sex/region adjustment",
-             "Extensive adjustment")
-             #"Hospitalised/Non-hospitalised COVID-19")
+             "Extensive adjustment",
+             "Hospitalised/Non-hospitalised COVID-19",
+             "Age/sex/region adjustment",
+             "Extensive adjustment",
+             "Hospitalised/Non-hospitalised COVID-19")
+
 
 # Make a single dataframe containing all estimates -----------------------------
 
@@ -36,12 +43,18 @@ df$stratification <- ""
 df$stratification <- ifelse(df$stratum %in% c("Age/sex/region adjustment","Extensive adjustment"),
                             "Overall",df$stratification)
 
-df$stratification <- ifelse(df$stratum %in% c("Non-hospitalised COVID-19","Hospitalised COVID-19"),
+df$stratification <- ifelse(df$stratum=="Hospitalised/Non-hospitalised COVID-19",
                             "Hospitalised/Non-hospitalised COVID-19",df$stratification)
+
+df$stratum <- ifelse(df$stratum=="Hospitalised/Non-hospitalised COVID-19" & df$covidpheno=="non_hospitalised",
+                     "Non-hospitalised COVID-19",df$stratum)
+
+df$stratum <- ifelse(df$stratum=="Hospitalised/Non-hospitalised COVID-19" & df$covidpheno=="hospitalised",
+                     "Hospitalised COVID-19",df$stratum)
 
 # Tidy variables ---------------------------------------------------------------
 
-df[,c("V1")] <- NULL
+df[,c("V1","covidpheno")] <- NULL
 
 # Identify results that need to be combined by age group -----------------------
 
@@ -86,10 +99,6 @@ for (i in 1:nrow(needs_meta)) {
   
 }
 
-# Tidy variables ---------------------------------------------------------------
-
-df$covidpheno <- NULL
-
 # Save final estimates ---------------------------------------------------------
 
-data.table::fwrite(df,"data/ccu002_01_suppl_data_figures_3.csv")
+data.table::fwrite(df,"data/ccu002_01_main_data_figures_1.csv")

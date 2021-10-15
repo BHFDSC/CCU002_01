@@ -2,24 +2,15 @@ rm(list = ls())
 
 # Load plot data ---------------------------------------------------------------
 
-tmp  <- data.table::fread("data/ccu002_01_suppl_data_figures_1_2.csv", 
-                          #elect = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification","source"),
-                          data.table = FALSE)
-
-df <- data.table::fread("data/ccu002_01_suppl_data_figures_3.csv", 
-                        #elect = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification","source"),
+df <- data.table::fread("data/ccu002_01_main_data_figures_1.csv", 
                         data.table = FALSE)
 
-df$stratification <- "Overall" 
-
-df <- rbind(df,tmp)
-
+df <- df[df$event %in% c("angina","HF","stroke_SAH_HS","stroke_TIA","AMI","DVT_event","PE","stroke_isch"),]
 df <- df[df$stratification %in% c("Overall", "Hospitalised/Non-hospitalised COVID-19"),]
 df <- df[df$agegp=="all",]
 df <- df[df$term %in% c("week1","week2","week3_4","week5_8","week9_12","week13_26","week27_49"),]
 
-synthetic <- unique(df[,c("event","agegp","sex","term")])
-synthetic <- synthetic[synthetic$event %in% c("angina","HF","stroke_SAH_HS","stroke_TIA"),]
+synthetic <- unique(df[df$event=="HF",c("event","agegp","sex","term")])
 synthetic$stratification <-  "Hospitalised/Non-hospitalised COVID-19"
 synthetic$source <- "synthetic"
 
@@ -82,42 +73,7 @@ df$event <- factor(df$event, levels=c("Acute myocardial infarction",
                                       "Deep vein thrombosis",
                                       "Pulmonary embolism"))
 
-# Separate "venous" and "arterial" ---------------------------------------------
-
-df$plot <- ifelse(df$event %in% c("Angina","Heart failure","Deep vein thrombosis","Pulmonary embolism"),2,1)
-
 # Plot and save ----------------------------------------------------------------
-
-for (i in c(1:2)) {
-  
-  ggplot2::ggplot(data = df[df$plot==i,],
-                  mapping = ggplot2::aes(x = time, y = estimate, color = stratum, shape=stratum, fill=stratum)) +
-    ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = 1), colour = "#A9A9A9") +
-    ggplot2::geom_point(position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = ifelse(conf.low<0.25,0.25,conf.low), 
-                                                  ymax = ifelse(conf.high>64,64,conf.high),  
-                                                  width = 0), 
-                           position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::geom_line(position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::scale_y_continuous(lim = c(0.5,64), breaks = c(0.25,0.5,1,2,4,8,16,32,64), trans = "log") +
-    ggplot2::scale_x_continuous(lim = c(0,44), breaks = seq(0,44,4)) +
-    ggplot2::scale_fill_manual(values = levels(df$colour), labels = levels(df$stratum)) +
-    ggplot2::scale_color_manual(values = levels(df$colour), labels = levels(df$stratum)) +
-    ggplot2::scale_shape_manual(values = c(rep(c(21,22),3),23,24), labels = levels(df$stratum)) +
-    ggplot2::labs(x = "\nWeeks since COVID-19 diagnosis", y = "Hazard ratio and 95% confidence interval") +
-    ggplot2::guides(fill=ggplot2::guide_legend(ncol = 4, byrow = TRUE)) +
-    ggplot2::theme_minimal() +
-    ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(),
-                   panel.grid.minor = ggplot2::element_blank(),
-                   legend.key = ggplot2::element_rect(colour = NA, fill = NA),
-                   legend.title = ggplot2::element_blank(),
-                   legend.position="bottom",
-                   plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
-    ggplot2::facet_wrap(event~stratification, ncol = 2)
-  
-  ggplot2::ggsave(paste0("output/ccu002_01_individualevents",i,".png"), height = 297, width = 210, unit = "mm", dpi = 600, scale = 1)
-  
-}
 
 df$event_strat <- paste0(df$event,"\n",df$stratification)
 
@@ -165,4 +121,4 @@ ggplot2::ggplot(data = df,
                  plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
   ggplot2::facet_wrap(event_strat~., ncol = 4)
 
-ggplot2::ggsave(paste0("output/ccu002_01_individualevents.png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
+ggplot2::ggsave(paste0("output/ccu002_01_main_figure1.png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
