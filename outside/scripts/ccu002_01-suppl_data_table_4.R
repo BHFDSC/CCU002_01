@@ -2,15 +2,22 @@ rm(list = ls())
 
 # Load data --------------------------------------------------------------------
 
-df1 <- data.table::fread("data/ccu002_01_main_figure_estimates.csv", 
+df <- data.table::fread("data/ccu002_01_main_data_figures_1_2.csv", 
                          select = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification"),
                          data.table = FALSE)
 
-df2 <- data.table::fread("data/ccu002_01_suppl_figure_estimates.csv", 
+df2 <- data.table::fread("data/ccu002_01_suppl_data_figures_1_2.csv", 
                          select = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification"),
                          data.table = FALSE)
 
-df <- rbind(df1,df2)
+df3 <- data.table::fread("data/ccu002_01_suppl_data_figures_3.csv", 
+                         select = c("event","agegp","term","estimate","conf.low","conf.high","stratum"),
+                         data.table = FALSE)
+
+df3$stratification <- "Overall"
+
+df <- rbind(df,df2)
+df <- rbind(df,df3)
 
 df <- df[df$agegp=="all" | df$stratification=="Age group",]
 
@@ -60,6 +67,6 @@ for (event in unique(df$event)) {
   
   # Save -----------------------------------------------------------------------  
   
-  data.table::fwrite(tmp, paste0("output/ST4_",event,".csv"))
+  data.table::fwrite(tmp, paste0("output/ccu002_01_suppl_table_4_",event,".csv"))
   
 }

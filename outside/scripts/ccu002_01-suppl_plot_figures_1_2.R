@@ -2,21 +2,9 @@ rm(list = ls())
 
 # Load plot data ---------------------------------------------------------------
 
-df <- data.table::fread("data/ccu002_01_suppl_figure_estimates.csv", 
+df <- data.table::fread("data/ccu002_01_suppl_data_figures_1_2.csv", 
                         select = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification","source"),
                         data.table = FALSE)
-
-synthetic <- data.frame(event = rep(c("DVT_event"),each = 2),
-                        agegp = "all",
-                        term = "week1",
-                        estimate = NA,
-                        conf.low = NA,
-                        conf.high = NA,
-                        stratum = c("Hospitalised COVID-19","Non-hospitalised COVID-19"),
-                        stratification = "Hospitalised/Non-hospitalised COVID-19",
-                        source = "synthetic")
-
-df <- rbind(df,synthetic)
 
 # Specify time -----------------------------------------------------------------
 
@@ -113,6 +101,6 @@ for (umb in c("Arterial","Venous")){
                    plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
     ggplot2::facet_wrap(event~stratification)
   
-    ggplot2::ggsave(paste0("output/suppl_figure_",tolower(umb),".png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
+    ggplot2::ggsave(paste0("output/ccu002_01_suppl_figures_1_2_",tolower(umb),".png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
   
 }

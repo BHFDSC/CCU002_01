@@ -3,14 +3,12 @@ rm(list = ls())
 files <- c("AgeSexRegion_AllOutcomes_AllAge_AllSex.csv", # Overall: age/sex/region adjustment
            "Extensive_AMI_stroke_isch_PE_DVT_event_AllAge_AllSex.csv", # Overall: extensive adjustment
            "Extensive_AMI_stroke_isch_PE_DVT_event_AllAge_AllSex.csv", # Age group:
-           "Extensive_AMI_stroke_isch_AllAge_AllSex_Phenotype.csv", # Non-hospitalised COVID-19 and Hospitalised COVID-19
-           "Extensive_PE_AllAge_AllSex_Phenotype.csv") # Non-hospitalised COVID-19 and Hospitalised COVID-19
+           "Extensive_AMI_stroke_isch_PE_DVT_AllAge_AllSex_Phenotype.csv") # Non-hospitalised COVID-19 and Hospitalised COVID-19
            
 
 stratum <- c("Age/sex/region adjustment",
              "Extensive adjustment",
              "Age group:",
-             "Hospitalised/Non-hospitalised COVID-19",
              "Hospitalised/Non-hospitalised COVID-19")
 
 # Make a single dataframe containing all estimates -----------------------------
@@ -57,57 +55,54 @@ df$stratum <- ifelse(df$stratum=="Hospitalised/Non-hospitalised COVID-19" & df$c
 
 df[,c("V1","covidpheno")] <- NULL
 
-# Identify events and stratum for meta-analysis --------------------------------
+# Identify results that need to be combined by age group -----------------------
 
-events <- unique(df$event)
-stratum <- unique(df$stratum)[!grepl("Age group:",unique(df$stratum))]
+needs_meta <- unique(df[,c("event","agegp","sex","stratum")])
+needs_meta <- needs_meta[!(needs_meta$agegp=="all"),]
+needs_meta <- needs_meta[!grepl("Age group",needs_meta$stratum),]
+needs_meta$agegp <- NULL
+needs_meta <- unique(needs_meta)
 
 # Perform meta-analysis for each event/stratum combination ---------------------
 
-for (e in events) {
-  for (s in stratum) {
-    
-    tmp <- df[df$stratum==s & df$event==e,]
-    meta <- unique(tmp[,c("event","sex","term")])
-    
-    if (nrow(tmp)>nrow(meta)) {
-      meta$agegp <- "all_ages"
-      meta$estimate <- NA
-      meta$conf.low <- NA
-      meta$conf.high <- NA
-      meta$p.value <- NA
-      meta$std.error <- NA
-      meta$robust.se <- NA
-      meta$statistic <- NA
-      meta$stratum <- s
-      meta$adjustment <- tmp$adjustment[1]
-      meta$stratification <- tmp$stratification[1]
-      meta$source <- "meta-analysis"
-      
-      for (j in unique(meta$term)) {
-        tmp2 <- tmp[tmp$term==j,]
-        if (nrow(tmp2)>0) {
-          tmp_meta <- meta::metagen(log(tmp2$estimate),tmp2$std.error, sm = "HR")
-          meta[meta$term==j,]$estimate <- exp(tmp_meta$TE.fixed)
-          meta[meta$term==j,]$conf.low <- exp(tmp_meta$lower.fixed)
-          meta[meta$term==j,]$conf.high <- exp(tmp_meta$upper.fixed)
-          meta[meta$term==j,]$p.value <- tmp_meta$pval.fixed
-          meta[meta$term==j,]$std.error <- tmp_meta$seTE.fixed
-        }
-      }
-      
-      df <- plyr::rbind.fill(df, meta)
-    }
-
+for (i in 1:nrow(needs_meta)) {
+  
+  tmp <- df[df$event==needs_meta$event[i] &
+              df$sex==needs_meta$sex[i] &
+              df$stratum==needs_meta$stratum[i],]
+  
+  meta <- unique(tmp[,c("event","sex","stratum","term","adjustment","stratification")])
+  
+  meta$agegp <- "all"
+  meta$source <- "meta-analysis (age groups)"
+  
+  meta$estimate <- NA
+  meta$conf.low <- NA
+  meta$conf.high <- NA
+  meta$p.value <- NA
+  meta$std.error <- NA
+  meta$robust.se <- NA
+  meta$statistic <- NA
+  
+  for (j in unique(meta$term)) {
+    tmp2 <- tmp[tmp$term==j,]
+    tmp_meta <- meta::metagen(log(tmp2$estimate),tmp2$std.error, sm = "HR")
+    meta[meta$term==j,]$estimate <- exp(tmp_meta$TE.fixed)
+    meta[meta$term==j,]$conf.low <- exp(tmp_meta$lower.fixed)
+    meta[meta$term==j,]$conf.high <- exp(tmp_meta$upper.fixed)
+    meta[meta$term==j,]$p.value <- tmp_meta$pval.fixed
+    meta[meta$term==j,]$std.error <- tmp_meta$seTE.fixed
   }
+  
+  df <- plyr::rbind.fill(df, meta)
+  
 }
 
 # Tidy variables ---------------------------------------------------------------
 
 df$covidpheno <- NULL
-df <- df[df$agegp=="all_ages" | df$stratification=="Age group",]
-df$agegp <- ifelse(df$agegp=="all_ages","all",df$agegp)
+df <- df[df$agegp=="all" | df$stratification=="Age group",]
 
 # Save final estimates ---------------------------------------------------------
 
-data.table::fwrite(df,"data/ccu002_01_suppl_figure_estimates.csv")
+data.table::fwrite(df,"data/ccu002_01_suppl_data_figures_1_2.csv")

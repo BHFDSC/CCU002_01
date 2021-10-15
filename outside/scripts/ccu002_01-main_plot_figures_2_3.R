@@ -2,7 +2,7 @@ rm(list = ls())
 
 # Load plot data ---------------------------------------------------------------
 
-df <- data.table::fread("data/ccu002_01_main_figure_estimates.csv", 
+df <- data.table::fread("data/ccu002_01_main_data_figures_1_2.csv", 
                         select = c("event","agegp","term","estimate","conf.low","conf.high","stratum","stratification","source"),
                         data.table = FALSE)
 
@@ -119,6 +119,6 @@ for (event in c("Arterial_event","Venous_event")) {
                    plot.background = ggplot2::element_rect(fill = "white", colour = "white")) +
     ggplot2::facet_wrap(stratification~.)
   
-  ggplot2::ggsave(paste0("output/main_figure_",tolower(gsub("_event","",event)),".png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
+  ggplot2::ggsave(paste0("output/ccu002_01_main_figures_1_2_",tolower(gsub("_event","",event)),".png"), height = 210, width = 297, unit = "mm", dpi = 600, scale = 1)
   
 }

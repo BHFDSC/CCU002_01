@@ -83,4 +83,4 @@ df$hospitalised_all <- ifelse(as.numeric(sprintf("%.0f",100000*(df$hospitalised_
 
 # Save table1 ------------------------------------------------------------------
 
-data.table::fwrite(df,"data/ccu002_01_table1.csv")
+data.table::fwrite(df,"output/ccu002_01_main_table_1.csv")
