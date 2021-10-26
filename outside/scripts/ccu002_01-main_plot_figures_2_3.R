@@ -101,18 +101,21 @@ df$colour <- factor(df$colour, levels=c("#000000",
 
 # Plot and save ----------------------------------------------------------------
 
+min_plot <- 0.5
+max_plot <- 64
+
 for (event in c("Arterial_event","Venous_event")) {
   
   ggplot2::ggplot(data = df[df$event==event,], 
                   mapping = ggplot2::aes(x = time, y = estimate, color = stratum, shape = stratum, fill = stratum)) +
     ggplot2::geom_hline(mapping = ggplot2::aes(yintercept = 1), colour = "#A9A9A9") +
     ggplot2::geom_point(position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = ifelse(conf.low<0.5,0.5,conf.low), 
-                                                  ymax = ifelse(conf.high>32,32,conf.high),  
+    ggplot2::geom_errorbar(mapping = ggplot2::aes(ymin = ifelse(conf.low<min_plot,min_plot,conf.low), 
+                                                  ymax = ifelse(conf.high>max_plot,max_plot,conf.high),  
                                                   width = 0), 
                            position = ggplot2::position_dodge(width = 1)) +
     ggplot2::geom_line(position = ggplot2::position_dodge(width = 1)) +
-    ggplot2::scale_y_continuous(lim = c(0.5,64), breaks = c(0.5,1,2,4,8,16,32,64), trans = "log") +
+    ggplot2::scale_y_continuous(lim = c(min_plot,max_plot), breaks = c(0.25,0.5,1,2,4,8,16,32,64,128), trans = "log") +
     ggplot2::scale_x_continuous(lim = c(0,44), breaks = seq(0,44,4)) +
     ggplot2::scale_fill_manual(values = levels(df$colour), labels = levels(df$stratum)) +
     ggplot2::scale_color_manual(values = levels(df$colour), labels = levels(df$stratum)) +

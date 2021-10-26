@@ -75,7 +75,7 @@ for (i in 1:length(files)) {
   
 }
 
-df$V1 <- NULL
+df[,c("V1","covidpheno")] <- NULL
 df$agegp <- ifelse(df$agegp=="all_ages","all",df$agegp)
 
 # Prepare Welsh data -----------------------------------------------------------
@@ -85,14 +85,16 @@ files <- c("AgeSexRegion_AllAges_Wales_211014.xlsx",
            "Extensive_AllAges_Wales_211014.xlsx",
            "Extensive_AllAges_Wales_211014.xlsx",
            "Extensive_Arterial_AgeGroups_Wales_211015.xlsx",
-           "Extensive_Venous_AgeGroups_Wales_211015.xlsx")
+           "Extensive_Venous_AgeGroups_Wales_211015.xlsx")#,
+           #"COVIDphen_FullyAdjusted_AllAges.xlsx")
 
 stratum <- c("Age/sex/region adjustment",
              "Extensive adjustment",
              "Sex: Male",
              "Sex: Female",
              "Age group:",
-             "Age group:")
+             "Age group:")#,
+             #"Hospitalised COVID-19/Non-hospitalised COVID-19")
 
 for (i in 1:length(files)) {
   
@@ -113,6 +115,13 @@ for (i in 1:length(files)) {
   
   tmp$source <- files[i]
   
+  if(stratum[i] %in% c("Hospitalised COVID-19/Non-hospitalised COVID-19")) {
+    tmp$adjustment <- "Extensive"
+    tmp$stratum <- ifelse(tmp$`COVIOD phenotype`=="hospitalised","Hospitalised COVID-19",tmp$stratum)
+    tmp$stratum <- ifelse(tmp$`COVIOD phenotype`=="non-hospitalised","Non-hospitalised COVID-19",tmp$stratum)
+    tmp$`COVIOD phenotype` <- NULL
+  }
+  
   if (stratum[i] %in% c("Sex: Male","Sex: Female")) {
     tmp <- tmp[tmp$sex!="all",]
   } else {
@@ -120,6 +129,7 @@ for (i in 1:length(files)) {
   }
   
   tmp$nation <- "Wales"
+  
   
   df <- plyr::rbind.fill(df, tmp)
   
@@ -232,3 +242,20 @@ for (i in 1:nrow(needs_meta)) {
 # Save final estimates ---------------------------------------------------------
 
 data.table::fwrite(df,"data/ccu002_01_main_data_figures_2_3.csv")
+
+
+# 
+
+tmp <- df 
+tmp <- tmp[(tmp$sex=="all" & tmp$agegp=="all") | (tmp$stratification=="Age group") | (tmp$stratification=="Sex" & tmp$agegp=="all"),]
+tmp <- tmp[tmp$term %in% c("week1","week2","week3_4","week5_8","week9_12","week13_26","week27_49"),]
+tmp$est <- paste0(ifelse(tmp$estimate>=10,sprintf("%.1f",tmp$estimate),sprintf("%.2f",tmp$estimate)),
+                  " (",ifelse(tmp$conf.low>=10,sprintf("%.1f",tmp$conf.low),sprintf("%.2f",tmp$conf.low)),
+                  "-",ifelse(tmp$conf.high>=10,sprintf("%.1f",tmp$conf.high),sprintf("%.2f",tmp$conf.high)),")")
+tmp <- tmp[,c("event","stratum","nation","term","est")]
+tmp <- tidyr::pivot_wider(tmp, names_from = "nation", values_from = c("est"))
+tmp$event <- ifelse(tmp$event=="Arterial_event","First arterial thrombosis",tmp$event)
+tmp$event <- ifelse(tmp$event=="Venous_event","First venous thromboembolism",tmp$event)
+data.table::fwrite(tmp[tmp$event=="First arterial thrombosis",],"output/CompareNations_arterial.csv")
+data.table::fwrite(tmp[tmp$event=="First venous thromboembolism",],"output/CompareNations_venous.csv")
+

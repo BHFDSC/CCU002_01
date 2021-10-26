@@ -5,13 +5,15 @@ files <- c("AgeSexRegion_HF_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex.csv",
            "Extensive_angina_stroke_SAH_HS_stroke_TIA_AllAge_AllSex_Pheno.csv",
            "AgeSexRegion_AllOutcomes_AllAge_AllSex.csv",
            "Extensive_AMI_stroke_isch_PE_DVT_event_AllAge_AllSex.csv",
-           "Extensive_AMI_stroke_isch_PE_DVT_AllAge_AllSex_Phenotype.csv")
+           "Extensive_AMI_stroke_isch_PE_DVT_AllAge_AllSex_Phenotype.csv",
+           "Extensive_HF_AllAge_AllSex_Phenotype.csv")
 
 stratum <- c("Age/sex/region adjustment",
              "Extensive adjustment",
              "Hospitalised/Non-hospitalised COVID-19",
              "Age/sex/region adjustment",
              "Extensive adjustment",
+             "Hospitalised/Non-hospitalised COVID-19",
              "Hospitalised/Non-hospitalised COVID-19")
 
 

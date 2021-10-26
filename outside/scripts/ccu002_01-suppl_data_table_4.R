@@ -28,6 +28,8 @@ tmp$nation <- ifelse(is.na(tmp$all),"England","all")
 tmp <- tmp[,c("event","stratum","nation")]
 df2 <- merge(df2, tmp, by = c("event","stratum","nation"))
 df2$nation <- NULL
+df2$term <- ifelse(df2$term=="week1_4","week1",df2$term)
+df2$term <- ifelse(df2$term=="week5_49","week5_8",df2$term)
 
 # Combine all plot data --------------------------------------------------------
 
@@ -35,11 +37,11 @@ df <- rbind(df1,df2)
 
 # Tidy event labels ------------------------------------------------------------
 
-df$event <- ifelse(df$event=="Arterial_event","Any arterial event",df$event)
-df$event <- ifelse(df$event=="Venous_event","Any venous event",df$event)
+df$event <- ifelse(df$event=="Arterial_event","First arterial thrombosis",df$event)
+df$event <- ifelse(df$event=="Venous_event","First venous thromboembolism",df$event)
 df$event <- ifelse(df$event=="angina","Angina",df$event)
 df$event <- ifelse(df$event=="HF","Heart failure",df$event)
-df$event <- ifelse(df$event=="stroke_SAH_HS","Subarachnoid haemorrhage & hemorrhagic stroke",df$event)
+df$event <- ifelse(df$event=="stroke_SAH_HS","Subarachnoid haemorrhage and haemorrhagic stroke",df$event)
 df$event <- ifelse(df$event=="stroke_TIA","Transient ischaemic attack",df$event)
 df$event <- ifelse(df$event=="AMI","Acute myocardial infarction",df$event)
 df$event <- ifelse(df$event=="PE","Pulmonary embolism",df$event)
@@ -47,7 +49,7 @@ df$event <- ifelse(df$event=="stroke_isch","Ischaemic stroke",df$event)
 df$event <- ifelse(df$event=="DVT_event","Deep vein thrombosis",df$event)
 df$event <- ifelse(df$event=="other_arterial_embolism","Other arterial embolism",df$event)
 df$event <- ifelse(df$event=="portal_vein_thrombosis","Portal vein thrombosis",df$event)
-df$event <- ifelse(df$event=="ICVT_event","Intercranial venous thrombosis",df$event) 
+df$event <- ifelse(df$event=="ICVT_event","Intracranial venous thrombosis",df$event) 
 
 # Derive table for each event --------------------------------------------------
 
@@ -80,15 +82,15 @@ df$event <- ifelse(df$event=="ICVT_event","Intercranial venous thrombosis",df$ev
                                       "Other arterial embolism",
                                       "Pulmonary embolism",
                                       "Deep vein thrombosis",
-                                      "Intercranial venous thrombosis",
+                                      "Intracranial venous thrombosis",
                                       "Portal vein thrombosis",
                                       "Other deep vein thrombosis",
                                       "Heart failure",
                                       "Angina",
                                       "Transient ischaemic attack",
-                                      "Subarachnoid haemorrhage & hemorrhagic stroke",
-                                      "Any arterial event",
-                                      "Any venous event")) 
+                                      "Subarachnoid haemorrhage and haemorrhagic stroke",
+                                      "First arterial thrombosis",
+                                      "First venous thromboembolism")) 
 
   tmp$stratum <- factor(tmp$stratum, levels=c("Extensive adjustment",
                                               "Age/sex/region adjustment",

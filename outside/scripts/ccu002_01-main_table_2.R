@@ -21,18 +21,17 @@ colnames(df) <- c("Event","No COVID-19","Hospitalised COVID-19","Non-hospitalise
 
 # Add empty rows ---------------------------------------------------------------
 
-df <- rbind(df,c("    Other deep vein thrombosis",rep(NA,3)))
-df <- rbind(df,c("Seperate outcomes",rep(NA,3)))
-df <- rbind(df,c("Arterial events",rep(NA,3)))
-df <- rbind(df,c("Venous events",rep(NA,3)))
+df <- rbind(df,c("Other vascular events",rep(NA,3)))
+df <- rbind(df,c("Arterial thrombosis events",rep(NA,3)))
+df <- rbind(df,c("Venous thromboembolism events",rep(NA,3)))
 
 # Tidy event labels ------------------------------------------------------------
 
-df$Event <- ifelse(df$Event=="Arterial_event","    Any arterial event",df$Event)
-df$Event <- ifelse(df$Event=="Venous_event","    Any venous event",df$Event)
+df$Event <- ifelse(df$Event=="Arterial_event","    First arterial thrombosis",df$Event)
+df$Event <- ifelse(df$Event=="Venous_event","    First venous thromboembolism",df$Event)
 df$Event <- ifelse(df$Event=="angina","    Angina",df$Event)
 df$Event <- ifelse(df$Event=="HF","    Heart failure",df$Event)
-df$Event <- ifelse(df$Event=="stroke_SAH_HS","    Subarachnoid haemorrhage & hemorrhagic stroke",df$Event)
+df$Event <- ifelse(df$Event=="stroke_SAH_HS","    Subarachnoid haemorrhage and haemorrhagic stroke",df$Event)
 df$Event <- ifelse(df$Event=="stroke_TIA","    Transient ischaemic attack",df$Event)
 df$Event <- ifelse(df$Event=="AMI","    Acute myocardial infarction",df$Event)
 df$Event <- ifelse(df$Event=="PE","    Pulmonary embolism",df$Event)
@@ -40,27 +39,34 @@ df$Event <- ifelse(df$Event=="stroke_isch","    Ischaemic stroke",df$Event)
 df$Event <- ifelse(df$Event=="DVT_event","    Deep vein thrombosis",df$Event)
 df$Event <- ifelse(df$Event=="other_arterial_embolism","    Other arterial embolism",df$Event)
 df$Event <- ifelse(df$Event=="portal_vein_thrombosis","    Portal vein thrombosis",df$Event)
-df$Event <- ifelse(df$Event=="ICVT_event","    Intercranial venous thrombosis",df$Event) 
+df$Event <- ifelse(df$Event=="ICVT_event","    Intracranial venous thrombosis",df$Event) 
+df$Event <- ifelse(df$Event=="other_DVT","    Other deep vein thrombosis",df$Event) 
 
-df$Event <- factor(df$Event, levels=c("Arterial events",
-                                      "    Any arterial event",
+df$Event <- factor(df$Event, levels=c("Arterial thrombosis events",
+                                      "    First arterial thrombosis",
                                       "    Acute myocardial infarction",
                                       "    Ischaemic stroke",
                                       "    Other arterial embolism",
-                                      "Venous events",
-                                      "    Any venous event",
+                                      "Venous thromboembolism events",
+                                      "    First venous thromboembolism",
                                       "    Pulmonary embolism",
                                       "    Deep vein thrombosis",
-                                      "    Intercranial venous thrombosis",
-                                      "    Portal vein thrombosis",
                                       "    Other deep vein thrombosis",
-                                      "Seperate outcomes",
+                                      "    Intracranial venous thrombosis",
+                                      "    Portal vein thrombosis",
+                                      "Other vascular events",
                                       "    Heart failure",
                                       "    Angina",
                                       "    Transient ischaemic attack",
-                                      "    Subarachnoid haemorrhage & hemorrhagic stroke")) 
+                                      "    Subarachnoid haemorrhage and haemorrhagic stroke")) 
 
 df <- df[order(df$Event),]
+
+# Disclosure control -----------------------------------------------------------
+
+df$`No COVID-19` <- ifelse(as.numeric(df$`No COVID-19`)<10,"<10",df$`No COVID-19`)
+df$`Hospitalised COVID-19` <- ifelse(as.numeric(df$`Hospitalised COVID-19`)<10,"<10",df$`Hospitalised COVID-19`)
+df$`Non-hospitalised COVID-19` <- ifelse(as.numeric(df$`Non-hospitalised COVID-19`)<10,"<10",df$`Non-hospitalised COVID-19`)
 
 # Save -------------------------------------------------------------------------
 
