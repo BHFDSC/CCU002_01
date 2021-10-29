@@ -12,6 +12,21 @@ We will compare the number of people with COVID infection who had a blood vessel
  
 This information is needed so that people with COVID know whether they need to worry about blood vessel diseases as they recover. If there is an increased risk, then preventative treatments might be needed.
 
+## How to cite this work
+> Citation goes here
+
+## Code
+
+* Click [here](https://github.com/BHFDSC/CCU002_01/tree/main/england) to view the analysis code used in NHS Digital's TRE for England.
+* Click [here] to view the analysis code used in the SAIL Databank.
+* Click [here](https://github.com/BHFDSC/CCU002_01/tree/main/outside) to view the code used outside of NHS Digital's TRE for England in order to prepare tables and figures for publication.
+* Phenotyping algorithms and codelists used in NHS Digital's TRE for England are available [here](https://github.com/BHFDSC/CCU002_01/tree/main/england/phenotypes)
+* Phenotyping algorithms and codelists used in the SAIL Databank are available [here](https://github.com/BHFDSC/CCU002_01/tree/main/Wales/phenotypes)
+
 ## Project approval
 
-This project has been approved by the CVD-COVID-UK Approvals & Oversight Board (Project ID: CCU002).
+This is a sub-project of [project CCU002](https://github.com/BHFDSC/CCU002) approved by the CVD-COVID-UK / COVID-IMPACT Approvals & Oversight Board (sub-project: CCU002_01).
+
+## License
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this software except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0. Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
