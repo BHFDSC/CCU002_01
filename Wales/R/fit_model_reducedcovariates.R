@@ -1,0 +1,170 @@
+# ******************************************************************************
+# SAIL project: WMCC - Wales Multi-morbidity Cardiovascular COVID-19 UK
+#               CCU002-01: SARS-CoV-2 infection and risk of venous thromboembolism and arterial thrombotic eventsK
+# About:        Fully adjusted model using predefined outcome-specific fixed covariates
+# ******************************************************************************
+source(file.path(scripts_dir,"fit_get_data_surv_eventcountbasedtimecuts.R"))
+
+#-------------------------------------------------------------------------------
+rm_lowvar_covars <- function(data_surv){
+  df <- data_surv %>% dplyr::select(c( "expo", "event", covar_names)) %>% distinct() %>% filter((expo==1) & (event==1))
+  print("select expo+event+covar_names")
+
+  df <- df %>%  dplyr::select(!c("expo", "event", 
+                                 df %>%  dplyr::select_if(is.numeric) %>% names(),
+                                 df %>%  dplyr::select_if(~n_distinct(.)>2) %>% names()
+  ))
+  print("data filtered")
+
+  summary <- as.data.frame(summary(df))
+  summary$Freq <- gsub("0:","",summary$Freq)
+  summary$Freq <- gsub("1:","",summary$Freq)
+  summary$Freq <- as.numeric(summary$Freq)
+  return(as.character(summary$Var2[summary$Freq <=2]))
+}
+
+#------------------------ GET SURV FORMULA & COXPH() ---------------------------
+coxfit_bkwdselection <- function(data_surv, sex, interval_names, fixed_covars, event, agegp, sex_as_interaction, covar_names){
+  cat("...... sex ", sex, " ...... \n")
+
+  # Uncomment the following lines for fully adjusted analysis-----
+  #covars_to_remove <- rm_lowvar_covars(data_surv)[!is.na((rm_lowvar_covars(data_surv)))]
+  #data_surv <- data_surv %>% dplyr::select(!covars_to_remove)
+  #-----------------------------------------------------------------
+
+  AMI_bkwdselected_covars <- covar_names[covar_names %in% names(data_surv)] %>% sort()
+  interval_names_withpre <- c("week_pre", interval_names)
+  
+  # get Surv formula ----
+  if (sex_as_interaction){
+    cat("...... sex as interaction ...... \n")
+    # ---------------------  *sex as interaction term  -------------------------
+    redcovariates_excl_region <- unique(c("age", "age_sq", AMI_bkwdselected_covars, fixed_covars))
+    redcovariates_excl_region <- names(data_surv %>%
+                                         dplyr::select_if(~names(.) %in% redcovariates_excl_region) %>%
+                                         summarise_all(list(~n_distinct(.))) %>%
+                                         select_if(. != 1) )
+    redcovariates_excl_region <- redcovariates_excl_region[!redcovariates_excl_region %in% c("SEX", interval_names)]
+    data_surv$week_pre <- 1*((data_surv$week1_4==0) & (data_surv$week5_39==0))
+    data_surv <- one_hot_encode("SEX", data_surv, interval_names_withpre)
+    print(data_surv)
+    
+    fml_red <- paste0(
+      "Surv(tstart, tstop, event) ~ week*SEX",
+      "+", paste(redcovariates_excl_region, collapse="+"),
+      "+ cluster(ALF_E)")
+  } else {
+    cat("...... sex as additive ...... \n")
+    redcovariates_excl_region <- unique(c("age", "age_sq", interval_names, AMI_bkwdselected_covars, fixed_covars))
+    cat("...... redcovariates_excl_region ...... \n")
+    print(unlist(redcovariates_excl_region))
+    fml_red <- paste0(
+      "Surv(tstart, tstop, event) ~ ",
+      paste(redcovariates_excl_region, collapse="+"),
+      "+ cluster(ALF_E)")
+    if ((sex == "all") & (!"SEX" %in% redcovariates_excl_region)){
+      fml_red <- paste(fml_red, "SEX", sep="+")
+    }
+  }
+
+  print(fml_red)
+
+  # fit coxph() ----
+  system.time(fit_red <- coxph(
+    formula = as.formula(fml_red), 
+    data = data_surv, weights=data_surv$cox_weights
+  ))
+  if (sex_as_interaction){
+    cat("save fit_red where sex_as_interaction ...... \n")
+    saveRDS(fit_red, paste0("fit_", event, "_", agegp, ".rds"))
+  }
+
+  # presentation ----
+  fit_tidy <-tidy(fit_red, exponentiate = TRUE, conf.int=TRUE)
+  fit_tidy$sex<-c(sex)
+
+  print(fit_tidy)
+  return(fit_tidy)
+}
+
+#-------------------------------------------------------------------------------
+fit_model_reducedcovariates <- function(sex_as_interaction, covars, agegp, event, survival_data){
+  list_data_surv_noncase_ids_interval_names <- fit_get_data_surv(covars, agegp, event, survival_data, cuts_weeks_since_expo)
+  data_surv <- list_data_surv_noncase_ids_interval_names[[1]]
+  noncase_ids <- list_data_surv_noncase_ids_interval_names[[2]]
+  interval_names <-list_data_surv_noncase_ids_interval_names[[3]]
+  ind_any_zeroeventperiod <- list_data_surv_noncase_ids_interval_names[[4]]
+
+  if (ind_any_zeroeventperiod){
+    cat("...... COLLAPSING POST-EXPO INTERVALS ......")
+    list_data_surv_noncase_ids_interval_names <- fit_get_data_surv(covars, agegp, event, survival_data, cuts_weeks_since_expo=cuts_weeks_since_expo_reduced)
+    data_surv <- list_data_surv_noncase_ids_interval_names[[1]]
+    noncase_ids <- list_data_surv_noncase_ids_interval_names[[2]]
+    interval_names <-list_data_surv_noncase_ids_interval_names[[3]]
+    ind_any_zeroeventperiod <- list_data_surv_noncase_ids_interval_names[[4]]
+  }
+  
+  covar_names <- names(covars)[ names(covars) != "ALF_E"]
+  
+  data_surv <- data_surv %>% left_join(covars)
+  data_surv <- data_surv %>% mutate(SEX = factor(SEX))
+  data_surv$cox_weights <- ifelse(data_surv$ALF_E %in% noncase_ids, 1/noncase_frac, 1)
+
+  cat("... data_surv ... \n")
+  print(data_surv)
+
+  fixed_covars <- c()
+  
+  if (sex_as_interaction){
+    # ---------------------  *sex as interaction term  -------------------------
+    fit <- coxfit_bkwdselection(data_surv, "all", interval_names, fixed_covars,event, agegp, sex_as_interaction, covar_names)
+  } else {
+    # ------------------------------  + sex  -----------------------------------
+    fit_sexall <- coxfit_bkwdselection(data_surv, "all", interval_names, fixed_covars, event, agegp, sex_as_interaction, covar_names)
+    print("fit_sexall")
+    fit_sex1 <- coxfit_bkwdselection(data_surv %>% filter(SEX==1), "1", interval_names, fixed_covars, event, agegp, sex_as_interaction, covar_names)
+    print("fit_sex1")
+    fit_sex2 <- coxfit_bkwdselection(data_surv %>% filter(SEX==2), "2", interval_names, fixed_covars, event, agegp, sex_as_interaction, covar_names)
+    print("fit_sex2")
+    fit <- rbindlist(list(fit_sexall, fit_sex1, fit_sex2))
+  }
+
+  fit$event <- event
+  fit$agegp <- agegp
+
+  cat("... fit ... \n")
+  print(fit)
+
+  #write.csv(fit, paste0("CCU002_DataPreparation/results_full/tbl_hr_" , expo, "_", event, "_", agegp, ".csv"), row.names = F)
+  write.csv(fit, paste0("CCU002_DataPreparation/results/tbl_hr_" , expo, "_", event, "_", agegp, ".csv"), row.names = F)
+}
+
+#-------------------------------------------------------------------------------
+mk_factor_orderlevels <- function(df, colname)
+{
+  df <- df %>% dplyr::mutate(
+    !!sym(colname) := factor(!!sym(colname), levels = str_sort(unique(df[[colname]]), numeric = TRUE)))
+  return(df)
+}
+
+#-------------------------------------------------------------------------------
+one_hot_encode <- function(interacting_feat, data_surv, interval_names_withpre){
+  cat("...... one_hot_encode ...... \n")
+  data_surv <- as.data.frame(data_surv)
+  data_surv$week <- apply(data_surv[unlist(interval_names_withpre)], 1, function(x) names( x[x==1]) )
+  data_surv$week <- relevel(as.factor( data_surv$week) , ref="week_pre")
+
+  data_surv$tmp <- as.factor(paste(data_surv$week, data_surv[[interacting_feat]], sep="_"))
+  df_tmp <- as.data.frame(model.matrix( ~ 0 + tmp, data = data_surv))
+  names(df_tmp) <- substring(names(df_tmp), 4)
+
+  for (colname in names(df_tmp)){
+    print(colname)
+    df_tmp <- mk_factor_orderlevels(df_tmp, colname)
+  }
+
+  data_surv <- cbind(data_surv, df_tmp)
+
+  str(data_surv)
+  return(data_surv)
+}
