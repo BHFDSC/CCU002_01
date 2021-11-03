@@ -1,0 +1,128 @@
+---
+header-includes:
+title: "CCU002-01 Table 1"
+author: "Hoda Abbasizanjani"
+date: "Last edited `r format(Sys.time(), '%B %d, %Y')`"
+output:
+  word_document:
+    keep_md: yes
+    toc_depth: 2
+  html_document:
+    css: style.css
+    toc_depth: 3
+    number_sections: true
+    link-citations: yes
+  pdf_document:
+    number_sections: true
+---
+
+```{r global_options, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r "loginSctn", eval=TRUE, echo = FALSE }
+library(RODBC);
+source("login_box.r");
+login = getLogin(); 
+sql = odbcConnect('PR_SAIL',login[1],login[2]);
+login = 0
+```
+
+```{r "LOAD PACKAGES", eval=TRUE, echo=FALSE}
+library(lubridate)
+library(tidyr)
+library(Cairo)
+library(fastmap)
+library(assertthat)
+library(tidyverse)
+library(gt)
+library(gtsummary)
+library(magrittr)
+library(data.table)
+library(dplyr)
+library(broom)
+library(purrr)
+```
+
+
+```{r "READ DATA", eval=TRUE, echo=FALSE}
+
+df <- data.table::fread("P:/abbasizh/workspace/CCU002_DataPreparation/raw/CCU002_01_COHORT_FULL_20210914.csv",data.table = FALSE)
+
+df$COVID_STATUS <- ifelse(is.na(df$EXP_CONFIRMED_COVID_PHENOTYPE) | df$EXP_CONFIRMED_COVID_PHENOTYPE == "", "No COVID-19", 
+                          ifelse(df$EXP_CONFIRMED_COVID_PHENOTYPE == "hospitalised                  " | df$EXP_CONFIRMED_COVID_PHENOTYPE == "hospitalised", "Hospitalised", "Non-hospitalised"))
+
+
+df$age_cat <- ifelse(df$COV_AGE >=18 & df$COV_AGE <= 29, '18-29',
+                     ifelse(df$COV_AGE >=30 & df$COV_AGE <= 39, '30-39',
+                            ifelse(df$COV_AGE >=40 & df$COV_AGE <= 49, '40-49',
+                                   ifelse(df$COV_AGE >=50 & df$COV_AGE <= 59, '50-59',
+                                          ifelse(df$COV_AGE >=60 & df$COV_AGE <= 69, '60-69',
+                                                 ifelse(df$COV_AGE >=70 & df$COV_AGE <= 79, '70-79', 
+                                                        ifelse(df$COV_AGE >=80 & df$COV_AGE <= 89, '80-89', 
+                                                               ifelse(df$COV_AGE >= 90, '>=90', 'Missing'))))))))
+
+df$wimd <- ifelse(is.na(df$COV_DEPRIVATION), 'Missing', df$COV_DEPRIVATION)
+```
+
+
+```{r "TABLE 1", eval=TRUE, echo=FALSE}
+
+df %>%
+  select(COV_SEX, COV_ETHNICITY, age_cat, wimd, COV_SMOKING_STATUS, COV_EVER_AMI, COV_EVER_COPD,
+         COV_EVER_DIABETES, COV_EVER_CKD, COV_EVER_PE_VT, COV_EVER_ICVT, COV_EVER_DEMENTIA,
+         COV_EVER_ALL_STROKE, COV_EVER_THROMBOPHILIA, COV_EVER_TCP, COV_EVER_LIVER_DISEASE,
+         COV_EVER_CANCER, COV_SURGERY_LASTYR, COV_EVER_HYPERTENSION, COV_EVER_OBESITY,
+         COV_EVER_DEPRESSION, COV_EVER_OTHER_ARTERIAL_EMBOLISM, COV_EVER_DIC,
+         COV_EVER_MESENTERIC_THROMBUS, COV_EVER_ARTERY_DISSECT, COV_EVER_LIFE_ARRHYTHMIA,
+         COV_EVER_CARDIOMYOPATHY, COV_EVER_HF, COV_EVER_PERICARDITIS, COV_EVER_MYOCARDITIS,
+         COV_ANTIPLATELET_MEDS, COV_LIPID_MEDS, COV_ANTICOAGULATION_MEDS, COV_COCP_MEDS,
+         COV_HRT_MEDS, COV_AGE, COV_N_DISORDER, COV_UNIQUE_BNF_CHAPS, COVID_STATUS) %>%
+  tbl_summary(by = COVID_STATUS,
+              statistic = list(all_continuous()  ~ "{mean} ({sd})"),
+              #missing = "no",
+              label = list(COV_SEX ~ "Sex",
+                           age_cat ~ "Age in decades",
+                           wimd ~ "Deprivation",
+                           COV_SMOKING_STATUS ~ "Smoking status",
+                           COV_EVER_AMI ~ "Myocardial infarction",
+                           COV_EVER_COPD ~ "COPD",
+                           COV_EVER_DIABETES ~ "Diabetes",
+                           COV_EVER_CKD ~ "Chronic kidney disease",
+                           COV_EVER_PE_VT ~ "DVT or PE",
+                           COV_EVER_ICVT ~ "ICVT",
+                           COV_EVER_DEMENTIA ~ "Dementia",
+                           COV_EVER_ALL_STROKE ~ "Stroke",
+                           COV_EVER_THROMBOPHILIA ~ "Thrombophilia",
+                           COV_EVER_TCP ~ "TCP",
+                           COV_EVER_LIVER_DISEASE ~ "Liver disease",
+                           COV_EVER_CANCER ~ "Cancer",
+                           COV_SURGERY_LASTYR ~ "Major Surgery last year",
+                           COV_EVER_HYPERTENSION ~ "Hypertension",
+                           COV_EVER_OBESITY ~ "Obesity",
+                           COV_EVER_DEPRESSION ~ "Depression",
+                           COV_EVER_OTHER_ARTERIAL_EMBOLISM ~ "Other arterial embolism",
+                           COV_EVER_DIC ~ "Disseminated intravascular coagulation",
+                           COV_EVER_MESENTERIC_THROMBUS ~ "Mesenteric thrombus",
+                           COV_EVER_ARTERY_DISSECT ~ "Arterial dissection",
+                           COV_EVER_LIFE_ARRHYTHMIA ~ "Life threatening arrhythmias",
+                           COV_EVER_CARDIOMYOPATHY ~ "Cardiomyopathy",
+                           COV_EVER_HF ~ "Heart failure",
+                           COV_EVER_PERICARDITIS ~ "Pericarditis",
+                           COV_EVER_MYOCARDITIS ~ "Myocarditis",
+                           COV_ANTIPLATELET_MEDS ~ "Antiplatelet",
+                           COV_LIPID_MEDS ~ "Lipid lowering",
+                           COV_ANTICOAGULATION_MEDS ~ "Anticoagulant",
+                           COV_COCP_MEDS ~ "Combined oral contraceptive pill",
+                           COV_HRT_MEDS ~ "Hormone replacement",
+                           COV_AGE ~ "Age (mean, SD)",
+                           COV_UNIQUE_BNF_CHAPS ~ "Number of unique BNF chapters (mean, SD)",
+                           COV_N_DISORDER ~ "Consultation rate (mean, SD)"
+                           )
+              ) %>%
+  add_overall() %>%
+  bold_labels() 
+
+```
+
