@@ -18,7 +18,7 @@ This information is needed so that people with COVID know whether they need to w
 ## Code
 
 * Click [here](https://github.com/BHFDSC/CCU002_01/tree/main/england) to view the analysis code used in NHS Digital's TRE for England.
-* Click [here] to view the analysis code used in the SAIL Databank.
+* Click [here](https://github.com/BHFDSC/CCU002_01/tree/main/Wales) to view the analysis code used in the SAIL Databank.
 * Click [here](https://github.com/BHFDSC/CCU002_01/tree/main/outside) to view the code used outside of NHS Digital's TRE for England in order to prepare tables and figures for publication.
 * Phenotyping algorithms and codelists used in NHS Digital's TRE for England are available [here](https://github.com/BHFDSC/CCU002_01/tree/main/england/phenotypes)
 * Phenotyping algorithms and codelists used in the SAIL Databank are available [here](https://github.com/BHFDSC/CCU002_01/tree/main/Wales/phenotypes)
