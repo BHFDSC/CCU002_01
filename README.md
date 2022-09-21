@@ -13,7 +13,7 @@ We will compare the number of people with COVID infection who had a blood vessel
 This information is needed so that people with COVID know whether they need to worry about blood vessel diseases as they recover. If there is an increased risk, then preventative treatments might be needed.
 
 ## How to cite this work
-> Citation goes here
+Knight R, Walker V, Ip S, Cooper JA, Bolton T, Keene S, Denholm R, Akbari A, Abbasizanjani H, Torabi F, Omigie E, Hollings S, North TL, Toms R, Jiang X, Angelantonio ED, Denaxas S, Thygesen JH, Tomlinson C, Bray B, Smith CJ, Barber M, Khunti K, Davey Smith G, Chaturvedi N, Sudlow C, Whiteley WN, Wood AM, Sterne JAC; CVD-COVID-UK/COVID-IMPACT Consortium and the Longitudinal Health and Wellbeing COVID-19 National Core Study. Association of COVID-19 With Major Arterial and Venous Thrombotic Diseases: A Population-Wide Cohort Study of 48 Million Adults in England and Wales. Circulation. 2022 Sep 20;146(12):892-906. doi: https://10.1161/CIRCULATIONAHA.122.060785
 
 ## Code
 
